@@ -1,0 +1,177 @@
+<h1 style="color:red;">NEW UI LOADED</h1>
+<style>
+body {
+    font-family: Arial;
+    background-color: #f5f7fa;
+}
+
+/* CENTER CONTAINER */
+.container {
+    width: 950px;
+    margin: auto;
+}
+
+/* HEADER */
+h2 {
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* CARD */
+.card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* FORM */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+select, input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex: 1;
+    min-width: 120px;
+}
+
+/* BUTTON */
+button {
+    padding: 8px 15px;
+    background: #2c7be5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1a5edb;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th {
+    background: #2c7be5;
+    color: white;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* INPUT INSIDE TABLE */
+td input {
+    width: 90%;
+    padding: 5px;
+}
+
+/* ROW HOVER */
+tr:hover {
+    background: #f1f1f1;
+}
+
+/* ACTION LINKS */
+a {
+    text-decoration: none;
+    margin: 0 5px;
+    color: #2c7be5;
+    font-weight: bold;
+}
+
+a:hover {
+    color: red;
+}
+
+/* TOTAL BOX */
+.total-box {
+    text-align: right;
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+/* PRINT BUTTON */
+.print-btn {
+    display: block;
+    margin: 20px auto;
+}
+</style>
+
+
+<div class="container">
+
+<h2>💊 Pharmacy Materials</h2>
+
+<!-- FORM CARD -->
+<div class="card">
+<form method="post">
+    {% csrf_token %}
+
+    <select name="patient">
+        <option value="">Select Patient</option>
+        {% for p in patients %}
+        <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="date" name="date" value="{{ today }}">
+    <input type="text" name="item" placeholder="Material">
+    <input type="number" name="amount" placeholder="Amount">
+    <input type="number" name="paid" placeholder="Paid">
+
+    <button type="submit">Add</button>
+</form>
+</div>
+
+<!-- TABLE CARD -->
+<div class="card">
+<table>
+<tr>
+    <th>Date</th>
+    <th>Item</th>
+    <th>Amount</th>
+    <th>Paid</th>
+    <th>Action</th>
+</tr>
+
+{% for r in records %}
+<tr>
+    <td>{{ r.date }}</td>
+    <td>{{ r.item_name }}</td>
+    <td>{{ r.amount }}</td>
+    <td>{{ r.paid_amount }}</td>
+    <td>
+        <a href="/edit/{{ r.id }}/">✏️</a>
+        <a href="/print/{{ r.patient.id }}/">🖨</a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<!-- TOTALS -->
+<div class="total-box">
+    <b>Total Amount:</b> {{ total_amount }} <br>
+    <b>Total Paid:</b> {{ total_paid }} <br>
+    <b>Balance:</b> {{ balance }}
+</div>
+
+<button class="print-btn" onclick="window.print()">Print All</button>
+
+</div>
+
+</div>

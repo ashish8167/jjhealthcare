@@ -1,0 +1,19 @@
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Arial;
+}
+
+.container {
+    width: 900px;
+}
+</style>
+
+<h2>Add Visit</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>

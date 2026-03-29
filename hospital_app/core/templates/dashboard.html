@@ -1,0 +1,58 @@
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Arial;
+    background-color: #f5f7fa;
+}
+
+.container {
+    width: 600px;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.card {
+    display: block;
+    padding: 15px;
+    margin: 10px 0;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: black;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.card:hover {
+    background: #2c7be5;
+    color: white;
+    transform: scale(1.02);
+}
+
+.logout {
+    margin-top: 20px;
+    display: inline-block;
+    color: red;
+    text-decoration: none;
+}
+</style>
+
+<div class="container">
+
+<h2>🏥 Dashboard</h2>
+
+<a href="/add-patient/" class="card">➕ Add Patient</a>
+<a href="/pharmacy/" class="card">💊 Pharmacy Billing</a>
+<a href="/lab/" class="card">🧪 Lab Billing</a>
+<a href="/doctor/" class="card">👨‍⚕️ Doctor Charges</a>
+<a href="/room/" class="card">🛏 Room Charges</a>
+<a href="/non_medical/" class="card">📦 Non-Medical</a>
+<a href="/other/" class="card">🧾 Other Services</a>
+<a href="/logout/" class="logout">Logout</a>
+
+</div>

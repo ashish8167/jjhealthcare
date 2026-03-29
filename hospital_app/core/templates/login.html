@@ -1,0 +1,124 @@
+{% load static %}
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+}
+
+/* MAIN LAYOUT */
+.wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+/* LEFT SIDE (BRANDING) */
+.left {
+    flex: 1;
+    background: linear-gradient(135deg, #2c7be5, #1a5edb);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.left img {
+    width: 120px;
+    margin-bottom: 20px;
+}
+
+.left h1 {
+    font-size: 28px;
+}
+
+/* RIGHT SIDE (LOGIN FORM) */
+.right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f7fa;
+}
+
+.login-box {
+    width: 350px;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background: #2c7be5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1a5edb;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+    text-align: center;
+}
+</style>
+
+<div class="wrapper">
+
+<!-- LEFT SIDE -->
+<div class="left">
+    <img src="{% static 'logo.jpeg' %}">
+    <h1>J.J. HealthCare Rehab</h1>
+    <p>Patient Management System</p>
+</div>
+
+<!-- RIGHT SIDE -->
+<div class="right">
+    <div class="login-box">
+
+        <h3>Login</h3>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Username:</label>
+            <input type="text" name="username" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" required>
+
+            <button type="submit">Login</button>
+        </form>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+    </div>
+</div>
+
+</div>

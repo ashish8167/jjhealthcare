@@ -1,0 +1,62 @@
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Arial;
+}
+
+.container {
+    width: 400px;   /* smaller looks cleaner */
+}
+
+h2 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input, select {
+    width: 100%;
+    padding: 6px;
+    margin-top: 5px;
+}
+
+button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 8px;
+}
+</style>
+
+<div class="container">
+
+<h2>Add Patient</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Name:</label>
+    <input type="text" name="name" required>
+
+    <label>Age:</label>
+    <input type="number" name="age" required>
+
+    <label>Gender:</label>
+    <select name="gender" required>
+        <option value="">-- Select Gender --</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Others">Others</option>
+    </select>
+
+    <label>Phone:</label>
+    <input type="text" name="phone" required>
+    <label>Date of Admission (DOA):</label>
+    <input type="date" name="doa">
+    <button type="submit">Save Patient</button>
+</form>
+
+</div>

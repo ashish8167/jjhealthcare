@@ -1,0 +1,156 @@
+<style>
+body {
+    font-family: Arial;
+}
+
+/* SCREEN VIEW */
+.container {
+    width: 1000px;
+    margin: auto;
+}
+
+/* PRINT SETTINGS */
+@media print {
+
+    @page {
+        size: A4;
+        margin: 90px 20px 80px 20px;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .print-area {
+        width: 80%;
+        margin: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+    }
+
+    th, td {
+        border: 1px solid black;
+        padding: 6px;
+    }
+
+    .no-border td {
+        border: none;
+        text-align: left;
+    }
+
+    .no-print {
+        display: none;
+    }
+}
+</style>
+
+
+<div class="container">
+
+<div class="print-area">
+
+<!-- 🔥 HEADER SPACE (VERY IMPORTANT) -->
+<div style="height: 160px;"></div>
+
+
+<!-- 🏥 PATIENT DETAILS -->
+<table class="no-border">
+
+<tr>
+    <td><b>Patient Name:</b> {{ patient.name }}</td>
+    <td><b>Age:</b> {{ patient.age }}</td>
+</tr>
+
+<tr>
+    <td><b>Gender:</b> {{ patient.gender }}</td>
+    <td><b>Phone:</b> {{ patient.phone }}</td>
+</tr>
+<tr>
+    <td><b>DOA:</b> {{ patient.doa }}</td>
+    <td></td>
+</tr>
+<tr>
+    <td><b>Category:</b> {{ category|title }}</td>
+    <td><b>Category:</b> 
+        {% if category == "other" %}
+            Other Services
+        {% else %}
+            {{ category|title }}
+        {% endif %}
+    </td>
+
+    <td><b>Date:</b> {{ records.0.date }}</td>
+</tr>
+
+</table>
+
+<br>
+
+<!-- 📄 BILL TABLE -->
+<h3 style="text-align:center;">Billing Summary</h3>
+
+<table>
+<tr>
+    <th>#</th>
+    <th>Date</th>
+    <th>{% if category == "lab" %}Lab Test{% else %}Item{% endif %}</th>
+    <th>Qty</th>
+    <th>Amount</th>
+    <th>Paid</th>
+</tr>
+
+{% for r in records %}
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ r.date }}</td>
+    <td>{{ r.item_name }}</td>
+    <td>{{ r.quantity }}</td>
+    <td>{{ r.amount }}</td>
+    <td>{{ r.paid_amount }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<br>
+
+<!-- 💰 TOTALS -->
+<table class="no-border" style="width: 40%; margin-left:auto;">
+<tr>
+    <td><b>Total Amount:</b></td>
+    <td>{{ total_amount }}</td>
+</tr>
+<tr>
+    <td><b>Total Paid:</b></td>
+    <td>{{ total_paid }}</td>
+</tr>
+<tr>
+    <td><b>Balance:</b></td>
+    <td>{{ balance }}</td>
+</tr>
+</table>
+
+<br><br><br>
+
+<!-- ✍ SIGN -->
+<div style="text-align:right; margin-top:50px;">
+    <b>Authorized Signature</b>
+</div>
+
+
+<!-- 🔥 FOOTER SPACE (VERY IMPORTANT) -->
+<div style="height: 120px;"></div>
+
+
+</div>
+
+<!-- PRINT BUTTON -->
+<div class="no-print" style="text-align:center; margin-top:20px;">
+    <button onclick="window.print()">Print</button>
+</div>
+
+</div>

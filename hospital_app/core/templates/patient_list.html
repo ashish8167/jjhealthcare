@@ -1,0 +1,37 @@
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    font-family: Arial;
+}
+
+.container {
+    width: 900px;
+}
+</style>
+<h2>Hospital Visits</h2>
+
+<a href="/add-patient/">Add Patient</a>
+<a href="/add-prescription/">Add Visit</a>
+
+<br><br>
+
+<table border="1">
+<tr>
+    <th>OP No</th>
+    <th>Patient</th>
+    <th>Doctor</th>
+    <th>Date</th>
+    <th>Action</th>
+</tr>
+
+{% for v in visits %}
+<tr>
+    <td>{{ v.op_number }}</td>
+    <td>{{ v.patient.name }}</td>
+    <td>{{ v.doctor }}</td>
+    <td>{{ v.visit_date }}</td>
+    <td><a href="/print/{{ v.id }}/">Print</a></td>
+</tr>
+{% endfor %}
+</table>
