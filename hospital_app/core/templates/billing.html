@@ -10,7 +10,8 @@ body {
 
 /* CONTAINER */
 .container {
-    width: 1000px;
+    width: 95%;
+    max-width: 1400px;
     margin: auto;
 }
 
@@ -27,6 +28,7 @@ h2 {
     margin-bottom: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow-x: auto;   /* 🔥 ADD THIS */
 }
 
 /* FORM */
@@ -37,12 +39,20 @@ form {
     align-items: center;
 }
 
-select, input {
+/* select, input {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 5px;
     flex: 1;
-    min-width: 120px;
+    min-width: 80px;    
+    box-sizing: border-box;  
+} */
+select, input {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 
 /* BUTTON */
@@ -64,18 +74,24 @@ table {
     width: 100%;
     border-collapse: collapse;
     border-radius: 10px;
-    overflow: hidden;
+    min-width: 1100px;  /* 🔥 IMPORTANT (because of Qty column) */
+    table-layout: fixed;
 }
 
 th {
     background: #2c7be5;
     color: white;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 th, td {
-    padding: 10px;
+    padding: 8px;
     text-align: center;
     border-bottom: 1px solid #ddd;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 tr:hover {
@@ -100,6 +116,13 @@ tr:hover {
     font-weight: bold;
     color: #2c7be5;
 }
+th:nth-child(1), td:nth-child(1) { width: 10%; }
+th:nth-child(2), td:nth-child(2) { width: 15%; }
+th:nth-child(3), td:nth-child(3) { width: 25%; }
+th:nth-child(4), td:nth-child(4) { width: 10%; }
+th:nth-child(5), td:nth-child(5) { width: 15%; }
+th:nth-child(6), td:nth-child(6) { width: 15%; }
+th:nth-child(7), td:nth-child(7) { width: 10%; }
 </style>
 
 
@@ -212,11 +235,18 @@ tr:hover {
 
 {% endif %}
 
-<input name="amount" placeholder="Amount">
+{% if category != "doctor" and category != "other" and category != "room" %}
+    <input type="number" id="qty" name="qty" placeholder="Qty" oninput="calcAmount()">
+{% endif %}
+
+<input type="number" id="rate" name="amount" placeholder="Rate" oninput="calcAmount()">
+<input type="number" id="total" placeholder="Total" readonly>
+
 <input name="paid" placeholder="Paid">
 
 <button type="submit">➕ Add</button>
 <button type="button" onclick="printPatient()">🖨 Print</button>
+<button type="button" onclick="downloadPDF()">⬇ Download PDF</button>
 </form>
 </div>
 
@@ -247,6 +277,10 @@ tr:hover {
         {% endif %}
     {% endif %}
 
+{% if category != "doctor" and category != "other" and category != "room" %}
+    <th>Qty</th>
+{% endif %}
+
     <th>Amount</th>
     <th>Paid</th>
     <th>Action</th>
@@ -262,9 +296,17 @@ tr:hover {
 
 {% if category == "room" %}
 
-<td><input type="date" name="from_date" value="{{ r.from_date }}"></td>
-<td><input type="date" name="to_date" value="{{ r.to_date }}"></td>
-<td><input name="item" value="{{ r.item_name }}"></td>
+<td>
+    <input type="date" name="from_date" value="{{ r.from_date|date:'Y-m-d' }}">
+</td>
+
+<td>
+    <input type="date" name="to_date" value="{{ r.to_date|date:'Y-m-d' }}">
+</td>
+
+<td>
+    <input name="item" value="{{ r.item_name }}">
+</td>
 
 {% else %}
 
@@ -273,7 +315,12 @@ tr:hover {
 
 {% endif %}
 
-<td><input name="amount" value="{{ r.amount }}"></td>
+<!-- <td><input name="amount" value="{{ r.amount }}"></td> -->
+{% if category != "doctor" and category != "other" and category != "room" %}
+    <td><input name="qty" value="{{ r.quantity }}"></td>
+{% endif %}
+
+<td><input name="amount" value="{{ r.amount }}"></td> 
 <td><input name="paid" value="{{ r.paid_amount }}"></td>
 
 <td>
@@ -288,11 +335,15 @@ tr:hover {
 </table>
 
 <!-- TOTAL -->
-<div class="total-box">
-    <b>Total:</b> {{ total_amount }} |
+<div class="total-box" style="font-size:16px;">
+    <b>Total:</b> ₹{{ total_amount }} |
+    <b style="color:green;">Paid:</b> ₹{{ total_paid }} |
+    <b style="color:red;">Balance:</b> ₹{{ balance }}
+</div>
+    <!-- <b>Total:</b> {{ total_amount }} |
     <b>Paid:</b> {{ total_paid }} |
     <b>Balance:</b> {{ balance }}
-</div>
+</div> -->
 
 <br>
 
@@ -408,4 +459,32 @@ $(document).ready(function() {
     });
 
 });
+</script>
+
+<script>
+function downloadPDF() {
+    let patientId = document.getElementById("patientSelect").value;
+    let category = "{{ category }}";
+
+    if (!patientId) {
+        alert("⚠ Please select patient first");
+        return;
+    }
+
+    window.location.href = `/download-pdf/${patientId}/${category}/`;
+}
+</script>
+
+<script>
+function calcAmount() {
+    let qty = document.getElementById("qty")?.value || 1;
+    let rate = document.getElementById("rate")?.value || 0;
+
+    let total = qty * rate;
+
+    let totalField = document.getElementById("total");
+    if (totalField) {
+        totalField.value = total;
+    }
+}
 </script>

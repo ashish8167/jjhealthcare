@@ -7,6 +7,10 @@ from datetime import date
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from .models import Patient
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from datetime import date
 
 # 🔐 LOGIN
 def login_view(request):
@@ -128,21 +132,56 @@ def billing_page(request, category):
             )
         # 🔥 OTHER CATEGORIES
         else:
+            qty = int(request.POST.get('qty') or 1)
+            rate = int(request.POST.get('amount') or 0)
+
+            # apply qty only for selected categories
+            if category not in ["doctor", "other", "room"]:
+                final_amount = qty * rate
+            else:
+                final_amount = rate
+                qty = ""   # no qty for these
+
             Billing.objects.create(
                 patient_id=patient_id,
                 category=category,
                 date=request.POST.get('date') or timezone.now().date(),
                 item_name=item_name,
-                quantity=request.POST.get('qty', ''),
-                amount=int(request.POST.get('amount') or 0),
+                quantity=qty,
+                amount=final_amount,
                 paid_amount=int(request.POST.get('paid') or 0)
             )
 
         return redirect(category)
 
     # totals
-    total_amount = sum(r.amount for r in records)
-    total_paid = sum(r.paid_amount for r in records)
+    # total_amount = sum(r.amount for r in records)
+    # total_paid = sum(r.paid_amount for r in records)
+    # balance = total_amount - total_paid
+    total_amount = 0
+    total_paid = 0
+    for r in records:
+
+        if category == "room":
+            if r.from_date and r.to_date:
+                days = (r.to_date - r.from_date).days + 1
+                days = max(days, 1)
+
+                r.total_days = days
+                r.calculated_amount = days * r.amount
+
+                total_amount += r.calculated_amount
+            else:
+                r.total_days = 1
+                r.calculated_amount = r.amount
+                total_amount += r.amount
+
+        else:
+            r.calculated_amount = r.amount
+            total_amount += r.amount
+
+        total_paid += r.paid_amount or 0
+
     balance = total_amount - total_paid
 
     selected_patient_id = request.session.get('selected_patient')
@@ -180,14 +219,27 @@ def edit_record(request, id):
     record = get_object_or_404(Billing, id=id)
 
     if request.method == 'POST':
-        date_val = request.POST.get('date')
 
-        if date_val:
-            record.date = date_val
+        # 🔥 ROOM CATEGORY FIX
+        if record.category == "room":
+            record.from_date = request.POST.get('from_date') or None
+            record.to_date = request.POST.get('to_date') or None
+
+        else:
+            date_val = request.POST.get('date')
+            if date_val:
+                record.date = date_val
 
         record.item_name = request.POST.get('item', '')
-        record.quantity = request.POST.get('qty', '')
-        record.amount = int(request.POST.get('amount') or 0)
+        qty = int(request.POST.get('qty') or 1)
+        rate = int(request.POST.get('amount') or 0)
+
+        if record.category not in ["doctor", "other", "room"]:
+            record.quantity = qty
+            record.amount = qty * rate
+        else:
+            record.quantity = ""
+            record.amount = rate
         record.paid_amount = int(request.POST.get('paid') or 0)
 
         record.save()
@@ -214,8 +266,34 @@ def print_page(request, patient_id, category):
         category=category
     )
 
-    total_amount = sum(r.amount for r in records)
-    total_paid = sum(r.paid_amount for r in records)
+    # total_amount = sum(r.amount for r in records)
+    # total_paid = sum(r.paid_amount for r in records)
+    total_amount = 0
+    total_paid = 0
+    for r in records:
+
+        if category == "room":
+            if r.from_date and r.to_date:
+                days = (r.to_date - r.from_date).days + 1
+                days = max(days, 1)
+
+                r.total_days = days
+                r.calculated_amount = days * r.amount
+
+                total_amount += r.calculated_amount
+            else:
+                r.total_days = 1
+                r.calculated_amount = r.amount
+                total_amount += r.amount
+
+        else:
+            r.calculated_amount = r.amount
+            total_amount += r.amount
+
+        total_paid += r.paid_amount or 0
+
+    balance = total_amount - total_paid
+
 
     return render(request, 'print.html', {
         'records': records,
@@ -311,3 +389,60 @@ def set_patient(request, id):
 
     # go back to same page
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))    
+
+
+@login_required
+def download_pdf(request, patient_id, category):
+    patient = get_object_or_404(Patient, id=patient_id)
+
+    records = Billing.objects.filter(
+        patient=patient,
+        category=category
+    )
+
+    # total_amount = sum(r.amount for r in records)
+    # total_paid = sum(r.paid_amount for r in records)
+    total_amount = 0
+    total_paid = 0
+    for r in records:
+
+        if category == "room":
+            if r.from_date and r.to_date:
+                days = (r.to_date - r.from_date).days + 1
+                days = max(days, 1)
+
+                r.total_days = days
+                r.calculated_amount = days * r.amount
+
+                total_amount += r.calculated_amount
+            else:
+                r.total_days = 1
+                r.calculated_amount = r.amount
+                total_amount += r.amount
+
+        else:
+            r.calculated_amount = r.amount
+            total_amount += r.amount
+
+        total_paid += r.paid_amount or 0
+
+    balance = total_amount - total_paid    
+
+    html_string = render_to_string('print.html', {
+        'records': records,
+        'patient': patient,
+        'total_amount': total_amount,
+        'total_paid': total_paid,
+        'balance': total_amount - total_paid,
+        'category': category
+    })
+
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+
+    safe_name = patient.name.replace(" ", "_")
+    today = date.today().strftime("%d-%b-%Y")
+
+    response['Content-Disposition'] = f'attachment; filename="Bill_{safe_name}_{category}_{today}.pdf"'
+    return response

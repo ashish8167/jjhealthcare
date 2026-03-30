@@ -20,5 +20,6 @@ urlpatterns = [
     path('delete/<int:id>/', views.delete_record, name='delete'),
     path('edit/<int:id>/', views.edit_record, name='edit'),
     path('set-patient/<int:id>/', views.set_patient, name='set_patient'),
+    path('download-pdf/<int:patient_id>/<str:category>/', views.download_pdf, name='download_pdf'),
 
 ]

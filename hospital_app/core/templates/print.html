@@ -21,16 +21,22 @@ body {
         margin: 0;
         padding: 0;
     }
-
+    /* 🔥 FIX 1: Override container width */
+    .container {
+        width: 100% !important;
+        margin: 0 !important;
+    }
     .print-area {
-        width: 80%;
-        margin: auto;
+        width: 100% !important;
+        margin: 0 !important;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
         text-align: center;
+        table-layout: fixed;   /* 👈 important */
+        word-wrap: break-word; /* 👈 prevents cut */
     }
 
     th, td {
@@ -75,7 +81,6 @@ body {
     <td></td>
 </tr>
 <tr>
-    <td><b>Category:</b> {{ category|title }}</td>
     <td><b>Category:</b> 
         {% if category == "other" %}
             Other Services
@@ -84,7 +89,11 @@ body {
         {% endif %}
     </td>
 
-    <td><b>Date:</b> {{ records.0.date }}</td>
+    {% if category == "room" and records %}
+        <td><b>Stay:</b> {{ records.0.from_date|date:"M d, Y" }} → {{ records.0.to_date|date:"M d, Y" }}</td>
+    {% else %}
+        <td><b>Date:</b> {{ records.0.date|date:"M d, Y" }}</td>
+    {% endif %}
 </tr>
 
 </table>
@@ -99,7 +108,11 @@ body {
     <th>#</th>
     <th>Date</th>
     <th>{% if category == "lab" %}Lab Test{% else %}Item{% endif %}</th>
-    <th>Qty</th>
+
+    {% if category != "room" %}
+        <th>Qty</th>
+    {% endif %}
+
     <th>Amount</th>
     <th>Paid</th>
 </tr>
@@ -107,11 +120,24 @@ body {
 {% for r in records %}
 <tr>
     <td>{{ forloop.counter }}</td>
-    <td>{{ r.date }}</td>
+    {% if category == "room" %}
+        <td>{{ r.from_date|date:"M d, Y" }} → {{ r.to_date|date:"M d, Y" }}</td>
+    {% else %}
+        <td>{{ r.date|date:"M d, Y" }}</td>
+    {% endif %}
     <td>{{ r.item_name }}</td>
-    <td>{{ r.quantity }}</td>
-    <td>{{ r.amount }}</td>
-    <td>{{ r.paid_amount }}</td>
+    {% if category != "room" %}
+        <td>{{ r.quantity }}</td>
+    {% endif %}
+    <!-- <td>₹ {{ r.amount }}</td> -->
+    <td>
+    {% if category == "room" %}
+        ₹ {{ r.amount }} × {{ r.total_days }} = ₹ {{ r.calculated_amount }}
+    {% else %}
+        ₹ {{ r.amount }}
+    {% endif %}
+    </td>    
+    <td>₹ {{ r.paid_amount }}</td>
 </tr>
 {% endfor %}
 </table>
