@@ -9,8 +9,12 @@ from django.shortcuts import render, redirect
 from .models import Patient
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from weasyprint import HTML
+# from weasyprint import HTML
 from datetime import date
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
 
 # 🔐 LOGIN
 def login_view(request):
@@ -391,58 +395,116 @@ def set_patient(request, id):
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))    
 
 
-@login_required
-def download_pdf(request, patient_id, category):
-    patient = get_object_or_404(Patient, id=patient_id)
+# @login_required
+# def download_pdf(request, patient_id, category):
+#     patient = get_object_or_404(Patient, id=patient_id)
 
-    records = Billing.objects.filter(
-        patient=patient,
-        category=category
-    )
+#     records = Billing.objects.filter(
+#         patient=patient,
+#         category=category
+#     )
 
-    # total_amount = sum(r.amount for r in records)
-    # total_paid = sum(r.paid_amount for r in records)
-    total_amount = 0
-    total_paid = 0
-    for r in records:
+#     # total_amount = sum(r.amount for r in records)
+#     # total_paid = sum(r.paid_amount for r in records)
+#     total_amount = 0
+#     total_paid = 0
+#     for r in records:
 
-        if category == "room":
-            if r.from_date and r.to_date:
-                days = (r.to_date - r.from_date).days + 1
-                days = max(days, 1)
+#         if category == "room":
+#             if r.from_date and r.to_date:
+#                 days = (r.to_date - r.from_date).days + 1
+#                 days = max(days, 1)
 
-                r.total_days = days
-                r.calculated_amount = days * r.amount
+#                 r.total_days = days
+#                 r.calculated_amount = days * r.amount
 
-                total_amount += r.calculated_amount
-            else:
-                r.total_days = 1
-                r.calculated_amount = r.amount
-                total_amount += r.amount
+#                 total_amount += r.calculated_amount
+#             else:
+#                 r.total_days = 1
+#                 r.calculated_amount = r.amount
+#                 total_amount += r.amount
 
-        else:
-            r.calculated_amount = r.amount
-            total_amount += r.amount
+#         else:
+#             r.calculated_amount = r.amount
+#             total_amount += r.amount
 
-        total_paid += r.paid_amount or 0
+#         total_paid += r.paid_amount or 0
 
-    balance = total_amount - total_paid    
+#     balance = total_amount - total_paid    
 
-    html_string = render_to_string('print.html', {
-        'records': records,
-        'patient': patient,
-        'total_amount': total_amount,
-        'total_paid': total_paid,
-        'balance': total_amount - total_paid,
-        'category': category
-    })
+#     html_string = render_to_string('print.html', {
+#         'records': records,
+#         'patient': patient,
+#         'total_amount': total_amount,
+#         'total_paid': total_paid,
+#         'balance': total_amount - total_paid,
+#         'category': category
+#     })
 
-    pdf_file = HTML(string=html_string).write_pdf()
+#     # pdf_file = HTML(string=html_string).write_pdf()
 
-    response = HttpResponse(pdf_file, content_type='application/pdf')
+#     # response = HttpResponse(pdf_file, content_type='application/pdf')
 
-    safe_name = patient.name.replace(" ", "_")
-    today = date.today().strftime("%d-%b-%Y")
+#     safe_name = patient.name.replace(" ", "_")
+#     today = date.today().strftime("%d-%b-%Y")
 
-    response['Content-Disposition'] = f'attachment; filename="Bill_{safe_name}_{category}_{today}.pdf"'
-    return response
+#     # response['Content-Disposition'] = f'attachment; filename="Bill_{safe_name}_{category}_{today}.pdf"'
+#     # return response
+#     return render(request, 'print.html', {
+#     'records': records,
+#     'patient': patient,
+#     'total_amount': total_amount,
+#     'total_paid': total_paid,
+#     'balance': total_amount - total_paid,
+#     'category': category
+#     })
+
+
+
+# @login_required
+# def download_pdf(request, patient_id, category):
+#     patient = get_object_or_404(Patient, id=patient_id)
+
+#     records = Billing.objects.filter(
+#         patient=patient,
+#         category=category
+#     )
+
+#     total_amount = 0
+#     total_paid = 0
+
+#     for r in records:
+#         if category == "room":
+#             if r.from_date and r.to_date:
+#                 days = (r.to_date - r.from_date).days + 1
+#                 days = max(days, 1)
+#                 r.calculated_amount = days * r.amount
+#                 total_amount += r.calculated_amount
+#             else:
+#                 r.calculated_amount = r.amount
+#                 total_amount += r.amount
+#         else:
+#             r.calculated_amount = r.amount
+#             total_amount += r.amount
+
+#         total_paid += r.paid_amount or 0
+
+#     balance = total_amount - total_paid
+
+#     # 🔥 Render HTML
+#     html = render_to_string('print.html', {
+#         'records': records,
+#         'patient': patient,
+#         'total_amount': total_amount,
+#         'total_paid': total_paid,
+#         'balance': balance,
+#         'category': category
+#     })
+
+#     # 🔥 Create PDF
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'attachment; filename="bill_{patient.name}.pdf"'
+
+#     pisa.CreatePDF(html, dest=response)
+
+#     return response
